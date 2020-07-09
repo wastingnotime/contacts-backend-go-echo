@@ -1,0 +1,11 @@
+# vscode
+.vscode
+
+# docker
+.dockerignore
+
+#git
+.git
+
+#misc
+README.md
