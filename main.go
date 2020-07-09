@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 	"os"
 
@@ -8,6 +9,9 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
 type contact struct {
@@ -18,60 +22,56 @@ type contact struct {
 }
 
 func main() {
+	//environment --------
 	godotenv.Load()
 
 	// ENVIRONMENT=development
+	// DB_LOCATION=contacts.db
 	environment := os.Getenv("ENVIRONMENT")
+	dbLocation := os.Getenv("DB_LOCATION")
 
-	contacts := []contact{
-		{
-			ID:          uuid.New().String(),
-			FirstName:   "Albert",
-			LastName:    "Einstein",
-			PhoneNumber: "1111-1111",
-		}, {
-			ID:          uuid.New().String(),
-			FirstName:   "Mary",
-			LastName:    "Curie",
-			PhoneNumber: "2222-1111",
-		},
+	//database --------
+	db, err := gorm.Open("sqlite3", dbLocation)
+	if err != nil {
+		log.Panic(err)
 	}
+	defer db.Close()
 
+	db.AutoMigrate(&contact{})
+
+	//api --------
 	e := echo.New()
 
 	if environment == "development" {
 		e.Use(middleware.Logger())
 	}
-
 	e.Use(middleware.Recover())
 	e.HideBanner = true
 
 	e.POST("/contacts", func(c echo.Context) error {
-		co := new(contact)
-		if err := c.Bind(co); err != nil {
+		payload := new(contact)
+		if err := c.Bind(payload); err != nil {
 			return err
 		}
 
-		co.ID = uuid.New().String()
+		payload.ID = uuid.New().String()
 
-		contacts = append(contacts, *co)
+		db.Create(payload)
 
 		return c.NoContent(http.StatusCreated)
 	})
 
 	e.GET("/contacts", func(c echo.Context) error {
+		var contacts []contact
+		db.Find(&contacts)
 		return c.JSON(http.StatusOK, contacts)
 	})
 
 	e.GET("/contacts/:id", func(c echo.Context) error {
 		id := c.Param("id")
+
 		var co contact
-		for _, ct := range contacts {
-			if ct.ID == id {
-				co = ct
-				break
-			}
-		}
+		db.Where(&contact{ID: id}).First(&co)
 		if co == (contact{}) {
 			return c.NoContent(http.StatusNotFound)
 		}
@@ -82,25 +82,22 @@ func main() {
 	e.PUT("/contacts/:id", func(c echo.Context) error {
 		id := c.Param("id")
 
-		cp := new(contact)
-		if err := c.Bind(cp); err != nil {
+		payload := new(contact)
+		if err := c.Bind(payload); err != nil {
 			return err
 		}
 
 		var co contact
-		for _, ct := range contacts {
-			if ct.ID == id {
-				co = ct
-				break
-			}
-		}
+		db.Where(&contact{ID: id}).First(&co)
 		if co == (contact{}) {
 			return c.NoContent(http.StatusNotFound)
 		}
 
-		co.FirstName = cp.FirstName
-		co.LastName = cp.LastName
-		co.PhoneNumber = cp.PhoneNumber
+		co.FirstName = payload.FirstName
+		co.LastName = payload.LastName
+		co.PhoneNumber = payload.PhoneNumber
+
+		db.Save(&co)
 
 		return c.NoContent(http.StatusNoContent)
 	})
@@ -109,27 +106,15 @@ func main() {
 		id := c.Param("id")
 
 		var co contact
-		var ix int = -1
-		for i, ct := range contacts {
-			if ct.ID == id {
-				co = ct
-				ix = i
-				break
-			}
-		}
+		db.Where(&contact{ID: id}).First(&co)
 		if co == (contact{}) {
 			return c.NoContent(http.StatusNotFound)
 		}
 
-		contacts = remove(contacts, ix)
+		db.Delete(&co)
 
 		return c.NoContent(http.StatusNoContent)
 	})
 
 	e.Logger.Fatal(e.Start(":8010"))
-}
-
-func remove(s []contact, i int) []contact {
-	s[len(s)-1], s[i] = s[i], s[len(s)-1]
-	return s[:len(s)-1]
 }
