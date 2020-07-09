@@ -36,7 +36,7 @@ func main() {
 	e.Use(middleware.Recover())
 	e.HideBanner = true
 
-	e.POST("/", func(c echo.Context) error {
+	e.POST("/contacts", func(c echo.Context) error {
 		co := new(contact)
 		if err := c.Bind(co); err != nil {
 			return err
@@ -49,11 +49,11 @@ func main() {
 		return c.NoContent(http.StatusCreated)
 	})
 
-	e.GET("/", func(c echo.Context) error {
+	e.GET("/contacts", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, contacts)
 	})
 
-	e.GET("/:id", func(c echo.Context) error {
+	e.GET("/contacts/:id", func(c echo.Context) error {
 		id := c.Param("id")
 		var co contact
 		for _, ct := range contacts {
@@ -69,7 +69,7 @@ func main() {
 		return c.JSON(http.StatusOK, co)
 	})
 
-	e.PUT("/:id", func(c echo.Context) error {
+	e.PUT("/contacts/:id", func(c echo.Context) error {
 		id := c.Param("id")
 
 		cp := new(contact)
@@ -95,7 +95,7 @@ func main() {
 		return c.NoContent(http.StatusNoContent)
 	})
 
-	e.DELETE("/:id", func(c echo.Context) error {
+	e.DELETE("/contacts/:id", func(c echo.Context) error {
 		id := c.Param("id")
 
 		var co contact
