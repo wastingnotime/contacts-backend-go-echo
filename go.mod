@@ -1,6 +1,6 @@
 module github.com/henriquericcio/contacts-backend-go-echo
 
-go 1.14
+go 1.15
 
 require (
 	github.com/google/uuid v1.1.2
