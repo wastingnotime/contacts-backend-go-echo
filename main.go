@@ -24,9 +24,6 @@ type contact struct {
 func main() {
 	//environment --------
 	godotenv.Load()
-
-	// ENVIRONMENT=development
-	// DB_LOCATION=contacts.db
 	environment := os.Getenv("ENVIRONMENT")
 	dbLocation := os.Getenv("DB_LOCATION")
 
