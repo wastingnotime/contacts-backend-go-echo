@@ -14,9 +14,12 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
-# ides
+# ide´s
 .vscode
 .idea
 
 # env
 .env
+
+# database
+contacts.db
