@@ -3,7 +3,7 @@
 **contacts-backend-go-echo** is part of "contacts" project that is an initiative where we try to explore frontend and backend implementations in order to better understand it cutting-edge features. This repository presents a golang rest API sample.
 
 ## stack
-* golang 1.17
+* golang 1.22
 * echo
 * sqlite
 * gorm
@@ -46,20 +46,36 @@ more examples and details about requests on (link)
 
 ## development 
 
-install golang 1.17+ [(how to install golang)](https://go.dev/doc/install)
+install golang 1.22+ [(how to install golang)](https://go.dev/doc/install)
 
-resolve dependencies
+### update
 ```
-go get
+ go get -u -v
+ go mod tidy
 ```
 
-run 
+### execute
+
+run
 ```
 go run .
 ```
 
-## update
+### testing
+create a new contact
 ```
- go get -u -v
- go mod tidy
+curl --request POST \
+  --url http://localhost:8010/contacts \
+  --header 'Content-Type: application/json' \
+  --data '{
+	"firstName": "Albert",
+	"lastName": "Einstein",
+	"phoneNumber": "2222-1111"
+  }'
+```
+
+retrieve existing contacts
+```
+curl --request GET \
+  --url http://localhost:8010/contacts
 ```
