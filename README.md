@@ -13,7 +13,9 @@
 * high concurrent
 * small footprint
 
-## build and use
+## get started (linux only)
+
+### option 1 - just build and use as docker image
 build a local docker image
 ```
 docker build --tag contacts.backend.go.echo .
@@ -21,47 +23,30 @@ docker build --tag contacts.backend.go.echo .
 
 execute the local docker image
 ```
-docker run -p 8010:80 contacts.backend.go.echo
+docker run -p 8010:8010 contacts.backend.go.echo
+```
+### option 2 - execute from source code 
+
+- first, install golang 1.22+, if you don't have it on your computer:  [how to install golang](https://go.dev/doc/install)
+- go to root of solution and execute the commands below
+
+set environment for development
+```
+cp .env_example .env
 ```
 
-create a new contact
-```
-curl --request POST \
-  --url http://localhost/contacts \
-  --header 'Content-Type: application/json' \
-  --data '{
-	"firstName": "Albert",
-	"lastName": "Einstein",
-	"phoneNumber": "2222-1111"
-  }'
-```
-
-retrieve existing contacts
-```
-curl --request GET \
-  --url http://localhost/contacts
-```
-more examples and details about requests on (link)
-
-
-## development 
-
-install golang 1.22+ [(how to install golang)](https://go.dev/doc/install)
-
-### update
+update deps
 ```
  go get -u -v
  go mod tidy
 ```
 
-### execute
-
-run
+and then run the application
 ```
 go run .
 ```
 
-### testing
+## testing
 create a new contact
 ```
 curl --request POST \
@@ -79,3 +64,4 @@ retrieve existing contacts
 curl --request GET \
   --url http://localhost:8010/contacts
 ```
+more examples and details about requests on (link) *to be defined
