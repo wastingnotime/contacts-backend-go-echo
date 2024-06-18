@@ -1,4 +1,4 @@
-module github.com/henriquericcio/contacts-backend-go-echo
+module github.com/wastingnotime/contacts-backend-go-echo
 
 go 1.22
 
