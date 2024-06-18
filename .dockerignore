@@ -7,7 +7,7 @@
 
 # docker
 .dockerignore
-Dockerfile
+dockerfile
 
 #git
 .git
