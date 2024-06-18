@@ -1,9 +1,8 @@
 name: docker image ci
 
 on:
-  push:
-    branches: [ "main" ]
   pull_request:
+    types: [closed]
     branches: [ "main" ]
 
 jobs:
@@ -26,4 +25,4 @@ jobs:
       run: docker build . --file dockerfile --tag wastingnotime/contacts-backend-go-echo
 
     - name: push the docker image
-      run: docker push wastingnotime/contacts-backend--echo
+      run: docker push wastingnotime/contacts-backend-go-echo
