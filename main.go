@@ -55,6 +55,8 @@ func main() {
 
 		db.Create(payload)
 
+		c.Response().Header().Set(echo.HeaderLocation, "/contacts/"+payload.ID)
+
 		return c.NoContent(http.StatusCreated)
 	})
 
