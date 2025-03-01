@@ -11,9 +11,11 @@ dockerfile
 
 #git
 .git
+.github
 
 #misc
 README.md
+LICENSE
 
 #database
 contacts.db
