@@ -19,7 +19,7 @@
 
 execute the remote docker image
 ```
-docker run -p 8010:8010 wastingnotime/contacts-backend-go-echo
+docker run -p 8010:8010 wastingnotime/contacts-backend-go-echo:0.1.0-alpha
 ```
 
 ### option 2 - build and run a local docker image
