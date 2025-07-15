@@ -1,25 +1,29 @@
-FROM golang:1.24-alpine as build-stage
-
-WORKDIR /app
-
-COPY . /app
+# syntax=docker/dockerfile:1
+FROM golang:1.24-alpine AS build-stage
 
 # to supports cgo as sqlite/driver dependency
 RUN apk add --update gcc musl-dev
 
+WORKDIR /app
+
+COPY go.mod /app
+
 RUN go mod download
+
+COPY . /app
 
 RUN go build -o app
 
 
 
-FROM alpine:latest as deploy-stage
+FROM alpine:3.22 AS deploy-stage
 
 ENV DB_LOCATION=/data/contacts.db
 ENV ENVIRONMENT=production
 
 # act as doc only
 EXPOSE 8010
+LABEL vendor=wastingnotime.org
 
 # principle of least privilege
 RUN addgroup -S nonroot && adduser -S appuser -G nonroot
@@ -37,4 +41,4 @@ COPY --from=build-stage /app/app .
 
 USER appuser
 
-ENTRYPOINT ./app
+ENTRYPOINT ["./app"]

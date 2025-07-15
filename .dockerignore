@@ -4,6 +4,7 @@
 
 # env
 .env
+.env_example
 
 # docker
 .dockerignore
@@ -12,9 +13,10 @@ dockerfile
 #git
 .git
 .github
+.gitignore
 
 #misc
-README.md
+readme.md
 LICENSE
 
 #database
