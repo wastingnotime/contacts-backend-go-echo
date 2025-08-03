@@ -19,8 +19,10 @@ func (h *handler) CreateContact(c echo.Context) error {
 	}
 
 	payload.ID = uuid.New().String()
-
-	h.db.Create(payload)
+	result := h.db.Create(payload)
+	if result.Error != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
 
 	c.Response().Header().Set(echo.HeaderLocation, "/contacts/"+payload.ID)
 
@@ -29,7 +31,10 @@ func (h *handler) CreateContact(c echo.Context) error {
 
 func (h *handler) GetContacts(c echo.Context) error {
 	var contacts []contact
-	h.db.Find(&contacts)
+	result := h.db.Find(&contacts)
+	if result.Error != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
 	return c.JSON(http.StatusOK, contacts)
 }
 
@@ -37,9 +42,12 @@ func (h *handler) GetContact(c echo.Context) error {
 	id := c.Param("id")
 
 	var co contact
-	h.db.Where(&contact{ID: id}).First(&co)
-	if co == (contact{}) {
+	result := h.db.Where(&contact{ID: id}).First(&co)
+	if result.RecordNotFound() {
 		return c.NoContent(http.StatusNotFound)
+	}
+	if result.Error != nil {
+		return c.NoContent(http.StatusInternalServerError)
 	}
 
 	return c.JSON(http.StatusOK, co)
@@ -54,16 +62,22 @@ func (h *handler) UpdateContact(c echo.Context) error {
 	}
 
 	var co contact
-	h.db.Where(&contact{ID: id}).First(&co)
-	if co == (contact{}) {
+	result := h.db.Where(&contact{ID: id}).First(&co)
+	if result.RecordNotFound() {
 		return c.NoContent(http.StatusNotFound)
+	}
+	if result.Error != nil {
+		return c.NoContent(http.StatusInternalServerError)
 	}
 
 	co.FirstName = payload.FirstName
 	co.LastName = payload.LastName
 	co.PhoneNumber = payload.PhoneNumber
 
-	h.db.Save(&co)
+	result = h.db.Save(&co)
+	if result.Error != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
 
 	return c.NoContent(http.StatusNoContent)
 }
@@ -72,12 +86,18 @@ func (h *handler) DeleteContact(c echo.Context) error {
 	id := c.Param("id")
 
 	var co contact
-	h.db.Where(&contact{ID: id}).First(&co)
-	if co == (contact{}) {
+	result := h.db.Where(&contact{ID: id}).First(&co)
+	if result.RecordNotFound() {
 		return c.NoContent(http.StatusNotFound)
 	}
+	if result.Error != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
 
-	h.db.Delete(&co)
+	result = h.db.Delete(&co)
+	if result.Error != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
 
 	return c.NoContent(http.StatusNoContent)
 }
