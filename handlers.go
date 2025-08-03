@@ -1,11 +1,12 @@
 package main
 
 import (
+	"errors"
+	"net/http"
+
 	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
-
 	"github.com/labstack/echo/v4"
-	"net/http"
 )
 
 type handler struct {
@@ -43,7 +44,7 @@ func (h *handler) GetContact(c echo.Context) error {
 
 	var co contact
 	result := h.db.Where(&contact{ID: id}).First(&co)
-	if result.RecordNotFound() {
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return c.NoContent(http.StatusNotFound)
 	}
 	if result.Error != nil {
@@ -63,7 +64,7 @@ func (h *handler) UpdateContact(c echo.Context) error {
 
 	var co contact
 	result := h.db.Where(&contact{ID: id}).First(&co)
-	if result.RecordNotFound() {
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return c.NoContent(http.StatusNotFound)
 	}
 	if result.Error != nil {
@@ -87,7 +88,7 @@ func (h *handler) DeleteContact(c echo.Context) error {
 
 	var co contact
 	result := h.db.Where(&contact{ID: id}).First(&co)
-	if result.RecordNotFound() {
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return c.NoContent(http.StatusNotFound)
 	}
 	if result.Error != nil {
