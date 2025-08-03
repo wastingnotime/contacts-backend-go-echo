@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/jinzhu/gorm"
+	"errors"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 )
@@ -84,8 +85,9 @@ func TestDeleteContact(t *testing.T) {
 		assert.Equal(t, http.StatusNoContent, rec.Code)
 
 		var co contact
-		mockDB.Where(&contact{ID: sample.ID}).First(&co)
-		assert.Equal(t, (contact{}), co)
+		result := mockDB.Where(&contact{ID: sample.ID}).First(&co)
+		assert.Error(t, result.Error)
+		assert.True(t, errors.Is(result.Error, gorm.ErrRecordNotFound))
 	}
 }
 
