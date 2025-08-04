@@ -19,6 +19,10 @@ func (h *handler) CreateContact(c echo.Context) error {
 		return err
 	}
 
+	if err := c.Validate(payload); err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
 	payload.ID = uuid.New().String()
 	result := h.db.Create(payload)
 	if result.Error != nil {
@@ -60,6 +64,10 @@ func (h *handler) UpdateContact(c echo.Context) error {
 	payload := new(contact)
 	if err := c.Bind(payload); err != nil {
 		return err
+	}
+
+	if err := c.Validate(payload); err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
 	var co contact

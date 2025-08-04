@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo/v4"
@@ -27,6 +28,7 @@ func TestMain(m *testing.M) {
 
 func TestCreateContact(t *testing.T) {
 	e := echo.New()
+	e.Validator = &CustomValidator{validator: validator.New()}
 	req := httptest.NewRequest(echo.POST, "/contacts", strings.NewReader(`{"firstName":"John","lastName":"Doe","phoneNumber":"1234567890"}`))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
@@ -50,11 +52,26 @@ func TestCreateContact(t *testing.T) {
 	}
 }
 
+func TestCreateContactValidation(t *testing.T) {
+	e := echo.New()
+	e.Validator = &CustomValidator{validator: validator.New()}
+	req := httptest.NewRequest(echo.POST, "/contacts", strings.NewReader(`{"lastName":"Doe","phoneNumber":"1234567890"}`))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	h := &handler{mockDB}
+
+	if assert.NoError(t, h.CreateContact(c)) {
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+	}
+}
+
 func TestUpdateContact(t *testing.T) {
 	sample := contact{ID: uuid.New().String(), FirstName: "John", LastName: "Doe", PhoneNumber: "1234567890"}
 	mockDB.Create(sample)
 
 	e := echo.New()
+	e.Validator = &CustomValidator{validator: validator.New()}
 	req := httptest.NewRequest(echo.PUT, "/contacts/"+sample.ID, strings.NewReader(`{"firstName":"John1","lastName":"Doe1","phoneNumber":"12345678901"}`))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
@@ -69,6 +86,31 @@ func TestUpdateContact(t *testing.T) {
 		assert.Equal(t, "John1", co.FirstName)
 		assert.Equal(t, "Doe1", co.LastName)
 		assert.Equal(t, "12345678901", co.PhoneNumber)
+
+		mockDB.Delete(&co)
+	}
+}
+
+func TestUpdateContactValidation(t *testing.T) {
+	sample := contact{ID: uuid.New().String(), FirstName: "John", LastName: "Doe", PhoneNumber: "1234567890"}
+	mockDB.Create(sample)
+
+	e := echo.New()
+	e.Validator = &CustomValidator{validator: validator.New()}
+	req := httptest.NewRequest(echo.PUT, "/contacts/"+sample.ID, strings.NewReader(`{"lastName":"Doe1","phoneNumber":"12345678901"}`))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	h := &handler{mockDB}
+
+	if assert.NoError(t, h.UpdateContact(c)) {
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+		var co contact
+		mockDB.Where(&contact{ID: sample.ID}).First(&co)
+		assert.Equal(t, "John", co.FirstName)
+		assert.Equal(t, "Doe", co.LastName)
+		assert.Equal(t, "1234567890", co.PhoneNumber)
 
 		mockDB.Delete(&co)
 	}

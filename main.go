@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"log"
 	"os"
 
+	"github.com/go-playground/validator/v10"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -13,9 +14,17 @@ import (
 
 type contact struct {
 	ID          string `json:"id"`
-	FirstName   string `json:"firstName"`
-	LastName    string `json:"lastName"`
-	PhoneNumber string `json:"phoneNumber"`
+	FirstName   string `json:"firstName" validate:"required"`
+	LastName    string `json:"lastName" validate:"required"`
+	PhoneNumber string `json:"phoneNumber" validate:"required"`
+}
+
+type CustomValidator struct {
+	validator *validator.Validate
+}
+
+func (cv *CustomValidator) Validate(i interface{}) error {
+	return cv.validator.Struct(i)
 }
 
 func main() {
@@ -35,6 +44,7 @@ func main() {
 
 	//api --------
 	e := echo.New()
+	e.Validator = &CustomValidator{validator: validator.New()}
 
 	if environment == "development" {
 		e.Use(middleware.Logger())
