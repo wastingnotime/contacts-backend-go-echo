@@ -2,10 +2,11 @@ package main
 
 import (
 	"errors"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 
@@ -19,7 +20,9 @@ var mockDB *gorm.DB
 
 func TestMain(m *testing.M) {
 	setup()
-	m.Run()
+	code := m.Run()
+	teardown()
+	os.Exit(code)
 }
 
 func TestCreateContact(t *testing.T) {
@@ -105,7 +108,7 @@ func TestGetContact(t *testing.T) {
 		assert.Equal(t, http.StatusOK, rec.Code)
 		rsp := rec.Result()
 		defer rsp.Body.Close()
-		b, _ := ioutil.ReadAll(rsp.Body)
+		b, _ := io.ReadAll(rsp.Body)
 		assert.Contains(t, string(b), sample.ID)
 		assert.Contains(t, string(b), "John")
 		assert.Contains(t, string(b), "Doe")
@@ -133,7 +136,7 @@ func TestGetContacts(t *testing.T) {
 		assert.Equal(t, http.StatusOK, rec.Code)
 		rsp := rec.Result()
 		defer rsp.Body.Close()
-		b, _ := ioutil.ReadAll(rsp.Body)
+		b, _ := io.ReadAll(rsp.Body)
 		assert.Contains(t, string(b), sample.ID)
 		assert.Contains(t, string(b), "John")
 		assert.Contains(t, string(b), "Doe")
@@ -158,9 +161,11 @@ func setup() {
 	if err != nil {
 		log.Panic(err)
 	}
-	//defer db.Close()
-
 	db.AutoMigrate(&contact{})
 
 	mockDB = db
+}
+
+func teardown() {
+	mockDB.Close()
 }
