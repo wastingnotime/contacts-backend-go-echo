@@ -40,8 +40,6 @@ func main() {
 	}
 	defer db.Close()
 
-	db.AutoMigrate(&contact{})
-
 	//api --------
 	e := echo.New()
 	e.Validator = &CustomValidator{validator: validator.New()}
