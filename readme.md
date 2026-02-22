@@ -61,6 +61,11 @@ update deps
  go mod tidy
 ```
 
+run migrations
+```
+go run cmd/migrate
+```
+
 and then run the application
 ```
 go run .
